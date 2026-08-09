@@ -13,14 +13,11 @@ from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushBu
 from PySide6.QtGui import QIcon
 
 class MHPlayAlert(QDialog):
-    """A completely borderless, theme-compliant dialog window that completely erases OS blue buttons."""
     def __init__(self, parent, custom_minutes, total_minutes):
         super().__init__(parent)
         
-        # Destroys the locked Windows title bar completely to kill the blue color
         self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         
-        # Enforces your exact dark charcoal (#2b2b2b) and glowing orange border themes cleanly
         self.setStyleSheet(
             "QDialog { background-color: #2b2b2b; border: 3px solid #f69038; border-radius: 8px; }"
             "QLabel { color: #ffffff; font-family: 'Segoe UI'; font-size: 12px; margin-top: 2px; background: transparent; }"
@@ -32,7 +29,7 @@ class MHPlayAlert(QDialog):
         master_layout.setContentsMargins(0, 0, 0, 0)
         master_layout.setSpacing(0)
         
-        # 1. OUR CUSTOM THEME HEADER BAR
+        # 1. CUSTOM THEME HEADER BAR
         custom_header = QWidget()
         custom_header.setStyleSheet("background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #f69038, stop:1 #323232); border-top-left-radius: 5px; border-top-right-radius: 5px;")
         header_layout = QHBoxLayout(custom_header)
@@ -98,19 +95,19 @@ class MHPlayTimer(QWidget):
         self.timeLabel.mousePressEvent = self.label_clicked_event
         layout.addWidget(self.timeLabel)
 
-        # 2. THEME-RESPECTANT ON-SCREEN PLAY BUTTON
+        # 2. ON-SCREEN PLAY BUTTON
         self.playBtn = QPushButton()
         layout.addWidget(self.playBtn)
 
-        # 3. THEME-RESPECTANT ON-SCREEN PAUSE BUTTON
+        # 3. ON-SCREEN PAUSE BUTTON
         self.pauseBtn = QPushButton()
         layout.addWidget(self.pauseBtn)
 
-        # 4. THEME-RESPECTANT ON-SCREEN STOP / RESET BUTTON
+        # 4. ON-SCREEN STOP / RESET BUTTON
         self.stopBtn = QPushButton()
         layout.addWidget(self.stopBtn)
 
-        # FIXED CRITICAL CONNECTIONS: Explicitly wires your buttons up to execute their Python tasks!
+        # CRITICAL CONNECTIONS: Explicitly wires your buttons up to execute their Python tasks!
         self.playBtn.clicked.connect(self.resume_timer)
         self.pauseBtn.clicked.connect(self.pause_timer)
         self.stopBtn.clicked.connect(self.reset_timer)
@@ -231,6 +228,5 @@ class MHPlayTimer(QWidget):
                 self.parent.reminder_fired = False
                 self.parent.session_clock.start(1000)
 
-            # --- LOCKED PERMANENTLY TO PURE WHITE ---
             self.timeLabel.setStyleSheet("font-family: 'Segoe UI', monospace; font-size: 11px; color: #ffffff; font-weight: bold; background: transparent; margin-top: 0px !important; padding: 0px 4px !important;")
                 
