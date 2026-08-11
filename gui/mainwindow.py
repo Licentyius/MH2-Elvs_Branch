@@ -49,7 +49,6 @@ class MHMainWindow(QMainWindow):
     Main Window class
     """
     def __init__(self, glob):
-        # RESTORED OLD ORIGINAL ORDER: No super() at line 1!
         self.env = glob.env
         env = glob.env
         self.glob = glob
@@ -148,40 +147,18 @@ class MHMainWindow(QMainWindow):
         # ========================================================
         # IMMERSIVE PLAY BREAK CLOCK & ACCUMULATING ALARM ENGINE
         # ========================================================
-        self.seconds_elapsed = 0
-        self.total_minutes_elapsed = 0  # Tracks continuous accumulated session timeline time
-        self.reminder_fired = False
 
         # Initialize and anchor our custom interactive widget row right onto the top menu bar corner area
-        from gui.playtimer import MHPlayTimer
         self.play_timer_engine = MHPlayTimer(self)
         
         menu_bar = self.menuBar()
-        if menu_bar is not None:
-            menu_bar.setCornerWidget(self.play_timer_engine, Qt.Corner.TopRightCorner)
+        menu_bar.setCornerWidget(self.play_timer_engine, Qt.Corner.TopRightCorner)
 
-        def play_timer_tick():
-            self.seconds_elapsed += 1
-            
-            # Read chosen custom tracking minutes live from configuration definitions memory
-            chosen_minutes = self.env.session.get("play_timer_minutes", 120)
-            target_seconds_limit = int(chosen_minutes * 60)
-            
-            # Flag a background timer event when active limit frames are crossed
-            if self.seconds_elapsed >= target_seconds_limit and not self.reminder_fired:
-                self.reminder_fired = True
-
-        # Simple continuous background ticker thread container bound to the application window process
-        self.session_clock = QTimer(self)
-        self.session_clock.timeout.connect(play_timer_tick)
-        self.session_clock.start(1000) # Fires precisely every 1 second
         # ========================================================
 
         s = env.session["mainwinsize"]
         self.resize(s["w"], s["h"])
        
-        menu_bar = self.menuBar()
-
         about_menu = menu_bar.addMenu(QIcon(os.path.join(env.path_sysicon, "makehuman.png")), "&About")
         self.addActCallBack(about_menu, "Info", self.info_call)
 
@@ -214,7 +191,7 @@ class MHMainWindow(QMainWindow):
             self.addActCallBack(regenerate, "System 3d Objects", self.regenerate_sys3dobjs)
 
         # ==============================================================================
-        # FIXED EMBEDDED COMMUNITY PANEL MOUNT (ZERO DUPLICATE LAUNCHES)
+        # EMBEDDED COMMUNITY PANEL MOUNT (ZERO DUPLICATE LAUNCHES)
         # ==============================================================================
         set_menu.addSeparator()
         from gui.plugin_panel import CommunityPanel
@@ -223,20 +200,35 @@ class MHMainWindow(QMainWindow):
         self.community_extension_panel = CommunityPanel(app_reference=self, glob_reference=glob)
 
         def display_embedded_panel():
-            """Ensures the panel unhides your sidebar layout columns when called."""
+            """
+            Dynamic Show/Hide Toggle Loop.
+            Only applies window focus flags when opening to prevent thread freezes!
+            """
+            # If the panel is already open on screen, hide it cleanly and exit!
+            if self.community_extension_panel.isVisible():
+                self.community_extension_panel.hide()
+                print("[Menu Toggle] Community Extensions panel safely hidden.")
+                return 
+                
+            # If it is currently hidden, proceed with your original mounting logic:
             if self.visRightColumn:
                 self.visRightColumn.show()
                 
-            # 2. EMBED IN PLACE: Inject the checklist panel straight into your existing layout skeleton!
             if self.community_extension_panel.parent() is None:
                 if self.rightColumn and getattr(self.rightColumn, 'layout', None) and self.rightColumn.layout():
                     self.rightColumn.layout().addWidget(self.community_extension_panel)
                 elif self.ToolBox and getattr(self.ToolBox, 'layout', None) and self.ToolBox.layout():
                     self.ToolBox.layout().addWidget(self.community_extension_panel)
 
+            # =====================================================================
+            # >>> CONDITIONAL FOCUS LOCK (STOPS INTENSE THREAD FREEZES) >>>
+            # =====================================================================
+            # We move these lines here so they ONLY fire when showing the panel!
             self.community_extension_panel.show()
             self.community_extension_panel.raise_()
             self.community_extension_panel.setFocus()
+            print("[Menu Toggle] Community Extensions panel safely displayed and focused.")
+
 
         # 3. Connect the Settings menu to pull focus to the embedded layout
         self.addActCallBack(set_menu, "Community Plugins", display_embedded_panel)
