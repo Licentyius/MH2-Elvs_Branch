@@ -1,0 +1,28 @@
+Proposed October 2026 Plugin Panel/Prop Patchnotes:
+
+
+Bugfixes:
+
+-returned turn on all debug messages checkmark in dropdown.
+
+Quality of life improvements:
+
+-Docking of windows in most areas possible.
+-Favorites for creators and creations in downloader. Faves saved to json in download folder in custom data.
+-time estimate on download que
+-Repo Cache button for pre-caching for ease of use in downloader!
+-Scalp helper added to body helper in vertex assignment(for MC2 & Make Apparel functionality at present).
+-Scroll bars where window size in pop ups is an issue.
+
+
+What is new:
+
+-A dual purpose integrated and dropin plugin panel.
+-Lighting presets and fx panel plugin.
+-Prop Panel**
+-Improvments in make clothes leading to new make apparel to come.
+-Play timer to announce when you have been creating for preferred durations.
+-outfit creation plugin
+-Cart for downloading many items in the asset downloader browser.
+
+
