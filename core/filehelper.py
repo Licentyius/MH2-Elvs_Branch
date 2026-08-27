@@ -1,6 +1,6 @@
 """
     License information: data/licenses/makehuman_license.txt
-    Author: black-punkduck
+    Author: black-punkduck, Elvaerwyn_MH2 2026 V1.1
 
     Classes:
     * FileHelper
@@ -29,8 +29,8 @@ class FileHelper():
         :param folder: folder as category
         :return: data entry for fileCache or None in case of error
         """
-
-        with open(path, 'r') as fp:
+        # Explicitly enforce universal UTF-8 parsing with automated error character mitigation
+        with open(path, 'r', encoding='utf-8', errors='replace') as fp:
             thumbfile = self.hasThumb(path)
             uuid = 0
             name = ""
@@ -48,13 +48,13 @@ class FileHelper():
                     name = words[1]
                 elif words[0] == "uuid":        # always last word, one word
                     uuid = words[1]
-                elif words[0] == "obj_file":        # always last word, one word
+                elif words[0] == "obj_file":    # always last word, one word
                     obj_file = words[1]
-                elif "author" in line:      # part of the comment, can be author
+                elif "author" in line:          # part of the comment, can be author
                     if words[1].startswith("author"):
                         author = " ".join(words[2:])
 
-                elif "tag" in line:         # allow tags with blanks
+                elif "tag" in line:             # allow tags with blanks
                     tags.append(" ".join(words[1:]).encode('ascii', 'ignore').lower().decode("utf-8"))
             mtags = "|".join(tags)
             return [name, uuid, path, folder, obj_file, thumbfile, author, mtags]
@@ -121,7 +121,6 @@ class FileHelper():
         mtags = "|".join(tags)
         return [name, uuid, path, folder, None, thumbfile, author, mtags]
 
-
     def getCacheDataJSON(self, path, folder):
         """
         scan json data files for skeleton or poses
@@ -142,7 +141,6 @@ class FileHelper():
             author = json["author"] if "author" in json else "unknown"
             mtags = "|".join(json["tags"]).encode('ascii', 'ignore').lower().decode("utf-8") if "tags" in json else ""
             return [name, uuid, path, folder, None, thumbfile, author, mtags]
-
 
     def getCacheDataSkins(self, path, folder):
         """
