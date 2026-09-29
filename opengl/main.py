@@ -19,7 +19,8 @@ from OpenGL import GL as gl
 from opengl.info import GLDebug
 from opengl.shaders import ShaderRepository
 from opengl.buffers import OpenGlBuffers, RenderedObject
-from opengl.camera import Camera, Light
+from opengl.camera import Camera
+from opengl.light import Light
 from opengl.skybox import OpenGLSkyBox
 from opengl.prims import VisMarker
 from opengl.scene import Scene
@@ -184,7 +185,7 @@ class OpenGLView(QOpenGLWidget):
         creates a rendered object and inserts it to a list according to zdepth and, if equal to bounding box
         """
         glbuffer = OpenGlBuffers()
-        glbuffer.GetBuffers(obj.gl_coord, obj.gl_norm, obj.gl_uvcoord)
+        glbuffer.GetObjBuffers(obj)
         self.buffers.append(glbuffer)
 
         boundingbox = obj.boundingBox()
@@ -336,6 +337,9 @@ class OpenGLView(QOpenGLWidget):
 
         showskel = self.objects_invisible is True and self.scene.hasSkeleton()
 
+        for predraw in self.glob.openGLPreDraw:
+            predraw[0](self, proj_view_matrix, campos)
+
         if baseClass is not None:
             poseskel =  self.glob.baseClass.pose_skeleton
             if poseskel is None:
@@ -372,9 +376,12 @@ class OpenGLView(QOpenGLWidget):
         # draw all other objects which are in scene
         #
         self.scene.draw(proj_view_matrix, campos, offset, showskel)
+        for postdraw in self.glob.openGLPostDraw:
+            postdraw[0](self, proj_view_matrix, campos)
 
         if self.marker is not None:
             self.marker.draw(proj_view_matrix)
+
         if self.glob.openGLWinUpdate:
             self.update()
 

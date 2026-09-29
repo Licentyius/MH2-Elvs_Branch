@@ -78,7 +78,6 @@ class gltfExport:
         self.IMAGEJPEG = 'image/jpeg'
         self.IMAGEPNG = "image/png"
 
-
         self.json = {}
         self.json["asset"] = {"generator": "makehuman2", "version": "2.0" }    # copyright maybe
         self.json["extensionsUsed"] =[]
@@ -417,7 +416,6 @@ class gltfExport:
     def addExtensions(self, extension):
         if extension not in self.json["extensionsUsed"]:
             self.json["extensionsUsed"].append(extension)
-
 
     def addMaterial(self, material, assettype):
         """
@@ -917,7 +915,6 @@ class gltfExport:
                                 self.json["scenes"][0]["nodes"] = []
                             self.json["scenes"][0]["nodes"].append(new_node_idx)
 
-
         # Handle animations safely
         if has_character and self.animation and baseweights is not None and baseclass.bvh and active_skeleton:
             baseclass.bvh.modCorrections()
@@ -967,7 +964,6 @@ class gltfExport:
         lenjson = len(jsondata)
         length += (8 + lenjson) # add header + json-blob to length
         chunkjsonlen = struct.pack('<I', lenjson)
-
 
         # now the binary buffer. try to work with pointers here
         # the number of maximum used data is in bufferoffset

@@ -266,7 +266,7 @@ class ExportLeftPanel(QVBoxLayout):
         self.norm.setChecked(self.values.normals)
         self.norm.setEnabled(attr["normset"])
 
-        # Read directly from your active prop database list variables safely
+        # Read directly from the active prop database list variables safely
         custom_props = getattr(self.glob, 'custom_props_list', [])
         
         # If the list is empty, don't lock the user out! Let them choose to enable
@@ -277,7 +277,6 @@ class ExportLeftPanel(QVBoxLayout):
         else:
             self.props_toggle.setChecked(self.values.save_props)
             self.props_toggle.setEnabled(attr["customset"])
-
 
         if self.bc.bvh is None or self.bc.skeleton is None:
             self.anim.setChecked(False)
@@ -412,7 +411,6 @@ class ExportLeftPanel(QVBoxLayout):
             success = gltf.binSave(self.bc, path)
             self.setAnimMode(lastanim)
 
-
         elif etype == ".stl":
             stl = stlExport(self.glob, folder, self.values.savehiddenverts, scale)
             if self.values.binmode:
@@ -447,7 +445,6 @@ class ExportLeftPanel(QVBoxLayout):
             QMessageBox.information(self.parent, "Done!", "Successful exported as " + path)
         else:
             ErrorBox(self.parent, self.env.last_error)
-
 
 class ExportRightPanel(QVBoxLayout):
     def __init__(self, parent, connector):
@@ -503,4 +500,3 @@ class ExportRightPanel(QVBoxLayout):
         self.env.logLine(2, "export BVH called")
         self.leftPanel.setExportType(".bvh")
         self.setChecked(4)
-

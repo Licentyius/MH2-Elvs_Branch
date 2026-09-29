@@ -1,17 +1,18 @@
 """
     License information: data/licenses/makehuman_license.txt
-    Author: black-punkduck, Elvaerwyn_MH2 2026 V1.3
+    Author: black-punkduck, Elvaerwyn_MH2 2026 V1.2
 
     Classes:
     * DownLoadImport
 """
 from PySide6.QtWidgets import (
-    QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QLineEdit, QLabel,
-    QMessageBox, QRadioButton, QCheckBox, QComboBox, QStyle, QVBoxLayout
+    QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QLineEdit, QLabel, QWidget,
+    QMessageBox, QRadioButton, QCheckBox, QComboBox, QStyle, QVBoxLayout, QScrollArea, QSizePolicy
     )
 
+from PySide6.QtGui import QIcon, QFontMetrics
 from PySide6.QtCore import Qt
-from gui.tablewindow import MHSelectAssetWindow
+from gui.assettabwindow import MHSelectAssetWindow
 from gui.common import ErrorBox, WorkerThread, MHBusyWindow, IconButton, MHFileRequest, MHProgWindow
 from opengl.texture import MH_Thumb
 from core.importfiles import AssetPack
@@ -72,6 +73,17 @@ class DownLoadImport(QVBoxLayout):
 
         super().__init__()
 
+        container = QWidget()
+        layout = QVBoxLayout()
+        container.setLayout(layout)
+        scrollArea = QScrollArea()
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        layout.setContentsMargins(0, 0, 0, 0)
+        scrollArea.setWidget(container)
+
+
         self.download_cart = []
         self.cart_processing = False
 
@@ -125,7 +137,7 @@ class DownLoadImport(QVBoxLayout):
         gb.setObjectName("subwindow")
         vlayout = QVBoxLayout()
 
-        vlayout.addWidget(QLabel("\nBrowse in list to find your asset."))
+        vlayout.addWidget(QLabel("Browse in list to find your asset."))
         self.browsebutton=QPushButton("Asset Browser")
         self.browsebutton.setEnabled(self.latest is not None)
         self.browsebutton.clicked.connect(self.selectfromList)
@@ -135,6 +147,35 @@ class DownLoadImport(QVBoxLayout):
         gb.setLayout(vlayout)
         self.addWidget(gb)
 
+        # ----------------------------------------------------
+        # BATCH CART PANEL Begins
+        # ----------------------------------------------------
+        checkout_panel = QGroupBox("Batch Asset Cart")
+        checkout_panel.setObjectName("subwindow")
+        panel_layout = QHBoxLayout(checkout_panel)
+
+        self.masterCartLabel = QLabel("Cart is empty")
+        panel_layout.addWidget(self.masterCartLabel)
+
+        # Configures text string space
+        self.checkoutBtn = QPushButton("Download All Items")
+        self.checkoutBtn.setDisabled(True) 
+        
+        # Pulls the icon from icon/cart.png
+        icon_path = os.path.join(self.env.path_sysicon, "cart.png")
+        
+        if os.path.exists(icon_path):
+            self.checkoutBtn.setIcon(QIcon(icon_path))
+        else:
+            # Fallback backup icon if path fails
+            dl_icon = self.parent.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
+            self.checkoutBtn.setIcon(dl_icon)
+            
+        self.checkoutBtn.clicked.connect(self.on_checkout_clicked)
+        panel_layout.addWidget(self.checkoutBtn)
+
+        self.addWidget(checkout_panel) 
+
         gb = QGroupBox("Asset Pack")
         gb.setObjectName("subwindow")
 
@@ -143,7 +184,9 @@ class DownLoadImport(QVBoxLayout):
         ilayout = QVBoxLayout()
         ilayout.addWidget(QLabel("Select asset pack:"))
 
+
         self.combo = QComboBox()
+        self.combo.setFixedWidth(280)
         self.combo.addItems(self.packitems)
         self.combo.setToolTip("An asset pack is a zip file,\nDownload of the standard assets can be done here.\nThey also can be downloaded manually\nand extracted with extract button below")
         self.combo.currentIndexChanged.connect(self.packNameChanged)
@@ -168,7 +211,12 @@ class DownLoadImport(QVBoxLayout):
         self.dlbutton.clicked.connect(self.downLoad)
         ilayout.addWidget(self.dlbutton)
 
-        userpath = QLabel("Destination user path for base: "  + self.env.basename + "\n"+ self.env.path_userdata)
+        userpath = QLabel() #"Destination user path for base: "  + self.env.basename + "\n"+ self.env.path_userdata)
+        metrics = QFontMetrics(userpath.font())
+        short_text = metrics.elidedText(self.env.path_userdata, Qt.ElideMiddle, 260)
+        userpath.setText("Destination user path for base: "  + self.env.basename + "\n"+ short_text)
+
+
         userpath.setToolTip("Files will be extracted to " + self.env.basename + " folders in "  + self.env.path_userdata)
         ilayout.addWidget(userpath)
 
@@ -207,52 +255,13 @@ class DownLoadImport(QVBoxLayout):
         self.clbutton=QPushButton("Clean Up")
         self.clbutton.clicked.connect(self.cleanUp)
         ilayout.addWidget(self.clbutton)
+        ilayout.addStretch()
         gb.setLayout(ilayout)
-        self.addWidget(gb)
+        layout.addWidget(gb)
         self.packinserted()
         self.fnameinserted()
-        # ----------------------------------------------------
-        # BATCH CART PANEL Begins
-        # ----------------------------------------------------
-        checkout_panel = QGroupBox("Batch Asset Cart")
-        panel_layout = QHBoxLayout(checkout_panel)
 
-        self.masterCartLabel = QLabel("Cart is empty")
-        panel_layout.addWidget(self.masterCartLabel)
-        panel_layout.addStretch()
-
-        self.checkoutBtn = QPushButton("Download Cart Items")
-        self.checkoutBtn.setDisabled(True) 
-        
-        from PySide6.QtGui import QIcon
-        icon_path = os.path.join(self.env.path_sysicon, "cart.png")
-        
-        if os.path.exists(icon_path):
-            self.checkoutBtn.setIcon(QIcon(icon_path))
-        else:
-            dl_icon = self.parent.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton)
-            self.checkoutBtn.setIcon(dl_icon)
-            
-        self.checkoutBtn.clicked.connect(self.on_checkout_clicked)
-        panel_layout.addWidget(self.checkoutBtn)
-        self.addWidget(checkout_panel)
-
-        # --- THE FULL REPOSITORY SYSTEM SYNCHRONIZER BUTTON ---
-        self.syncRepoButton = QPushButton("Sync Full Repository (Download All)")
-        self.syncRepoButton.setEnabled(self.latest is not None)
-        
-        total_assets_to_download = 0
-        if hasattr(self, 'json') and self.json:
-            total_assets_to_download = len(self.json)
-
-        if total_assets_to_download > 0:
-            self.syncRepoButton.setText(f"Sync Full Repository ({total_assets_to_download} Items)")
-        else:
-            self.syncRepoButton.setText("Sync Full Repository (Download All)")
-
-        self.syncRepoButton.clicked.connect(self.syncFullRepositoryCall)
-        self.syncRepoButton.setToolTip("Automatically download every single asset in the catalog at once.")
-        self.addWidget(self.syncRepoButton)
+        self.addWidget(scrollArea)
 
     def searchzipfile(self):
         freq = MHFileRequest(self.glob, "Select zipfile", "compressed file (*.zip)", "")
@@ -329,6 +338,9 @@ class DownLoadImport(QVBoxLayout):
             return
         destpath = self.env.path_sysdata if self.use_userpath is False else self.env.path_userdata
         fname = os.path.basename(filename)
+        #
+        # in case of newbase_<basename>.zip download a new mesh should be possible
+        #
         if fname.startswith("newbase_"):
             base = fname[8:-4]
             parentmesh = None
@@ -345,6 +357,8 @@ class DownLoadImport(QVBoxLayout):
             self.prog_window.progress.close()
             self.prog_window = None
 
+        # recreate internal repos to avoid a new start
+        #
         self.glob.MainWindow.syncRepositories()
 
         if self.error:
@@ -391,6 +405,8 @@ class DownLoadImport(QVBoxLayout):
         else:
             QMessageBox.information(self.parent, "Done!", self.bckproc.finishmsg)
         self.bckproc = None 
+        if hasattr(self, 'cart_processing') and self.cart_processing:
+            self.process_cart_queue()
 
     def finishListLoad(self):
         if hasattr(self, 'prog_window') and self.prog_window is not None:
@@ -408,6 +424,7 @@ class DownLoadImport(QVBoxLayout):
         if hasattr(self, 'browsebutton') and self.browsebutton:
             self.browsebutton.setEnabled(self.latest is not None)
 
+        # Recalculate and update the thumbnail sync buttons and warnings dynamically on reload
         if hasattr(self, 'syncThumbsButton') and self.syncThumbsButton:
             self.syncThumbsButton.setEnabled(self.latest is not None)
             total_thumbs = 0
@@ -415,6 +432,7 @@ class DownLoadImport(QVBoxLayout):
                 total_thumbs = sum(1 for k, r in self.json.items() if isinstance(r, dict) and "files" in r and "thumb" in r["files"])
             
             if total_thumbs > 0:
+                # Calibrated strictly against your real-world benchmark of ~30 mins for 2664 files
                 real_world_mins = int((total_thumbs * 0.675) / 60)
                 if real_world_mins < 1: 
                     real_world_mins = 1
@@ -429,6 +447,7 @@ class DownLoadImport(QVBoxLayout):
 
         self.getAssetPackList()
         
+        # Safety fallback checking prevents application crashes if combo widget layout is omitted
         if hasattr(self, 'combo') and self.combo is not None:
             self.combo.clear()
             self.combo.addItems(self.packitems)
@@ -469,8 +488,7 @@ class DownLoadImport(QVBoxLayout):
 
     def listDownLoad(self):
         if self.bckproc == None:
-            self.assetjson = None
-
+            self.assetjson = None       # reset this
             self.prog_window = MHProgWindow("Download Lists", 1000)
             self.prog_window.progress.forceShow()
             self.bckproc = WorkerThread(self.par_listdownload, self.assetlistpath, self.assetpacklistpath)
@@ -479,12 +497,17 @@ class DownLoadImport(QVBoxLayout):
             self.bckproc.finished.connect(self.finishListLoad)
 
     def par_thumb_cache_download(self, bckproc, *args):
+        """Processes the background task to safely cache missing thumbnails without crashing."""
         if self.assetjson is None:
             self.assetjson = self.assets.alistReadJSON(self.env, self.assetlistpath)
+            
         if not self.assetjson:
             self.error = "Asset list cache is empty. Please download lists first."
             return
+
         self.error = None
+        
+        # 1. Gather all tasks, safely skipping entries with missing 'files' structures
         all_tasks = []
         for key, rec in self.json.items():
             if isinstance(rec, dict):
@@ -493,38 +516,56 @@ class DownLoadImport(QVBoxLayout):
                     thumb_url = files_dict.get("thumb")
                     if thumb_url:
                         all_tasks.append((key, thumb_url))
+
         if not all_tasks:
             return
+
+        # 2. Filter out files that you ALREADY have on your hard drive
         needed_tasks = []
         for asset_key, thumb_url in all_tasks:
             display_title = self.json[asset_key].get("title", asset_key)
+            
+            # Match our clean .thumb extension naming layout
             if display_title.lower().endswith(".png"):
                 thumb_filename = display_title[:-4] + ".thumb"
             else:
                 thumb_filename = display_title + ".thumb"
+                
             dest_file = os.path.join(self.env.path_userdata, "downloads", self.env.basename, "render", thumb_filename)
+            
             if not os.path.exists(dest_file):
                 needed_tasks.append((asset_key, thumb_url, dest_file))
+
+        # 3. IF EVERYTHING IS ALREADY DOWNLOADED, EXIT GRACEFULLY!
         if not needed_tasks:
             if hasattr(bckproc, 'associated_window') and bckproc.associated_window:
                 bckproc.associated_window.setValueAndText(1000, "Cache is already 100% up to date!")
             elif self.prog_window:
                 self.prog_window.setValueAndText(1000, "Cache is already 100% up to date!")
+                
             self.bckproc.finishmsg = "Your thumbnail cache is already complete! No downloads were needed."
             return
+
         total_count = len(needed_tasks)
         self.env.logLine(1, f"Syncing cache: downloading {total_count} missing thumbnails.")
+
+        # 4. Download ONLY the missing files
         for idx, (asset_key, thumb_url, dest_file) in enumerate(needed_tasks):
             display_title = self.json[asset_key].get("title", asset_key)
             progress_percent = int((idx / total_count) * 1000)
+            
+            # Send progress updates to the progress window box
             msg_text = f"Caching Thumbs ({idx}/{total_count}): {display_title}"
             if hasattr(bckproc, 'associated_window') and bckproc.associated_window:
                 bckproc.associated_window.setValueAndText(progress_percent, msg_text)
             elif self.prog_window:
                 self.prog_window.setValueAndText(progress_percent, msg_text)
+
             try:
                 os.makedirs(os.path.dirname(dest_file), exist_ok=True)
                 loaded, text = self.assets.getUrlFile(thumb_url, dest_file)
+                
+                # Apply OpenGL rescale pass instantly so pictures render smoothly offline
                 if loaded and os.path.exists(dest_file):
                     from opengl.texture import MH_Thumb
                     thumb_engine = MH_Thumb()
@@ -533,37 +574,51 @@ class DownLoadImport(QVBoxLayout):
                 self.env.logLine(1, f"Failed caching thumbnail for {display_title}: {str(e)}")
 
     def syncAllThumbnailsCall(self):
+        """Initializes the background worker process thread to synchronize the local image files workspace."""
         if self.bckproc is None:
+            # Ensure asset lists are established in memory before running lookups
             if self.assetjson is None:
                 self.assetjson = self.assets.alistReadJSON(self.env, self.assetlistpath)
                 if isinstance(self.assetjson, list):
                     self.json = {item.get("title", item.get("id", str(i))): item for i, item in enumerate(self.assetjson) if isinstance(item, dict)}
                 else:
                     self.json = self.assetjson if self.assetjson else {}
+
             self.prog_window = MHProgWindow("Synchronizing Thumbnail Cache", 1000)
             self.prog_window.progress.forceShow()
+            
+            # Spawn task tracking inside your native parallel processing wrapper
             self.bckproc = WorkerThread(self.par_thumb_cache_download, None)
             self.bckproc.finishmsg = "Thumbnail database cache synchronized successfully!"
-            self.bckproc.finished.connect(self.finishListLoad)
+            self.bckproc.finished.connect(self.finishListLoad)  # Standard cleanup loop reuse
             self.bckproc.start()
+
 
     def par_filesdownload(self, bckproc, *args):
         destination = args[0][0]
         files = args[0][1]
         self.error = None
-
+        
         for elem in files:
             dest = os.path.split(elem)[1]
             self.env.logLine(8, "Get: " + elem + " >" + destination)
+            
+            # Redirect progress window using bckproc parameter 
             if hasattr(bckproc, 'associated_window') and bckproc.associated_window is not None:
                 bckproc.associated_window.setLabelText("Loading: " + elem)
             elif self.prog_window is not None:
                 self.prog_window.setLabelText("Loading: " + elem)
+                
             destpath = os.path.join(destination, dest)
             loaded, text = self.assets.getUrlFile(elem, destpath)
+            
             if loaded is False:
                 self.error = text
                 return
+                
+            # ========================================================
+            # NATIVE SYSTEM HOOKS (Merged inside the main files loop)
+            # ========================================================
             if destpath.endswith(".thumb"):
                 thumb = MH_Thumb()
                 thumb.rescale(destpath)
@@ -574,32 +629,38 @@ class DownLoadImport(QVBoxLayout):
                     self.glob.Targets.createTarget(tname, t)
                 else:
                     self.error = "target not found, please restart makehuman"
+
         self.error = text
 
     def parentAsset(self, key):
         """
-        Calculates the path of a parent asset.
+        calculate path of parent asset or return a path to type if possible
         """
         pobj = self.assetjson[key]["belongs_to"]
         if pobj["belonging_is_assigned"] is False:
+            #
+            # asset missing return User-data path
             return False, self.env.path_userdata
         else:
             if "belongs_to_core_asset" in pobj:
+                #
+                # core assets must be recalculated (basename added).
+                # eyes will always go into a common folder
+
                 (mtype, folder) = pobj["belongs_to_core_asset"].split("/", 2)
                 if mtype == "eyes":
                     path = self.env.existDataDir(mtype, self.env.basename)
                 else:
                     path = self.env.existDataDir(mtype, self.env.basename, folder)
-
                 if path is None:
-                    self.env.logLine(1, f" [Sync Warning] Core asset link broken in legacy data: {pobj['belongs_to_core_asset']}. Falling back to default directory.")
-                    return False, self.env.path_userdata
+                    self.env.last_error = "core assets not found: " + pobj["belongs_to_core_asset"]
+                    return False, None
 
                 return True, path
 
             parentkey = str(pobj["belongs_to_id"])
-            mtype = self.assetjson[parentkey]["type"]
-            if mtype == "model":
+            mtype = self.assetjson[parentkey]["type"]       # changed type includes hair, cannot use belongs_to_type
+            if mtype == "model":                            # change relation from mhm model to skins
                 mtype = "skins"
             folder = self.assets.titleToFileName(pobj["belongs_to_title"])
 
@@ -609,65 +670,80 @@ class DownLoadImport(QVBoxLayout):
             return True, path
 
     def singleDownLoad(self, assetname):
-        """
-        Executes single asset downloads.
-        """
+
+        supportedclasses = ["clothes", "hair", "eyes", "teeth", "eyebrows", "eyelashes", "expression",
+                "pose", "skin", "rig", "proxy", "model", "target", "material" ]
+
+        # if not loaded, load json now
         if self.assetjson is None:
             self.assetjson = self.assets.alistReadJSON(self.env, self.assetlistpath)
 
+        # if still None, error in JSON file
         if self.assetjson is None:
-            self.env.logLine(1, f" [Sync Error] Asset JSON catalog could not be read for: {assetname}")
-            return None
+            ErrorBox(self.parent, self.env.last_error)
+            return
 
         if assetname in self.assetjson:
             item = self.assetjson[assetname]
             folder = item.get("folder")
         else:
-            self.env.logLine(1, f" [Sync Warning] Asset '{assetname}' missing from JSON catalog lists. Skipping.")
-            return None
+            ErrorBox(self.parent, "Asset '" + assetname + "' not found in list.")
+            return
 
         mtype, flist = self.assets.alistGetFiles(self.assetjson, assetname)
 
-        # Removed the rigid 'supportedclasses' array restrictions entirely. 
-        # Any class added over the last 20 years or custom types will parse cleanly using their raw string types.
+        if mtype not in supportedclasses:
+            ErrorBox(self.parent, "Supported classes until now: " + str(supportedclasses))
+            return
+
         self.env.logLine(8, "Assets of type " + mtype + " >" + folder)
         for elem in flist:
             self.env.logLine(8, " " + elem)
 
         if mtype == "material":
+            #
+            # for materials the parent asset is needed and the path should be calculated
+
             okay, path = self.parentAsset(assetname)
             if okay is False:
-                # If a material's parent asset path is missing or undefined, it automatically drops into the standard user materials path.
                 if path is None:
-                    path = os.path.join(self.env.path_userdata, self.env.basename, "materials")
-                
-                self.env.logLine(8, " [Sync Auto-Route] Defaulting material asset path to: " + path)
+                    ErrorBox(self.parent, self.env.last_error)
+                    return
+                #
+                # part of the path is known, create a file request box
+
+                freq = MHFileRequest(self.glob, "Select a directory to save additional materials", None, path, save=".")
+                path = freq.request()
+                if path is None:
+                    return              # cancel
+
+                self.env.logLine(8, "Working with path: " + path)
 
             folder, err = self.assets.createMaterialsFolder(path)
         else:
             folder, err = self.assets.alistCreateFolderFromTitle(self.env.path_userdata, self.env.basename, mtype, folder)
 
         if folder is None:
-            self.env.logLine(1, f" [Sync Warning] Skipping path allocation block for '{assetname}': {err}")
+            ErrorBox(self.parent, err)
             return None
 
+        # Build an isolated pop-up tracker widget for this specific asset stream
         local_prog_window = MHBusyWindow("Download files to " + folder, "loading ...")
         local_prog_window.progress.forceShow()
         
         worker = WorkerThread(self.par_filesdownload, folder, flist)
         worker.finishmsg = "Download finished"
+        
+        # Attach the window directly onto the worker object so it is safely self-contained!
         worker.associated_window = local_prog_window
         
         if not hasattr(self, 'active_parallel_workers'):
             self.active_parallel_workers = []
         self.active_parallel_workers.append((assetname, worker))
         
-        if hasattr(self, 'cart_processing') and self.cart_processing:
-            worker.finished.connect(self.advance_full_repo_sync_loop)
-        else:
-            worker.finished.connect(self.finish_parallel_load)
-            
+        worker.finished.connect(self.finish_parallel_load)
         worker.start()
+        
         self.bckproc = worker
         return worker
 
@@ -682,60 +758,37 @@ class DownLoadImport(QVBoxLayout):
         self.update_cart_time_estimate()
 
     def update_cart_time_estimate(self):
+        """Keeps the master button label calculation accurate on the primary panel window."""
         cart_len = len(self.download_cart)
         if cart_len == 0:
             self.masterCartLabel.setText("Cart is empty")
             self.checkoutBtn.setDisabled(True)
             return
+            
         self.checkoutBtn.setEnabled(True)
+        # Display the real item quantity waiting in memory
         self.masterCartLabel.setText(f"Items waiting in queue: {cart_len}")
 
     def on_checkout_clicked(self):
-        if not self.download_cart: 
-            return
+        if not self.download_cart: return
         self.checkoutBtn.setEnabled(False)
-        self.masterCartLabel.setText("Processing batch queue...")
+        self.masterCartLabel.setText("Downloading parallel queue...")
         self.cart_processing = True
         
-        next_asset = self.download_cart[0]
-        self.current_asset = next_asset
-        active_worker = self.singleDownLoad(next_asset)
+        batch_queue = list(self.download_cart)
+        self.active_parallel_workers = []
         
-        if active_worker is None:
-            if next_asset in self.download_cart:
-                self.download_cart.remove(next_asset)
-            self.advance_sequential_cart_queue()
-
-    def advance_sequential_cart_queue(self):
-        sender_worker = self.sender()
-        if sender_worker and hasattr(sender_worker, 'associated_window') and sender_worker.associated_window is not None:
-            sender_worker.associated_window.progress.close()
-            sender_worker.associated_window = None
-
-        if self.bckproc is not None:
-            self.assets.cleanupUnzip()
-            self.bckproc = None
-            
-        if self.download_cart:
-            self.download_cart.pop(0)
-            
-        if self.download_cart:
-            cart_len = len(self.download_cart)
-            self.masterCartLabel.setText(f"Batch processing: {cart_len} tasks remaining...")
-            next_asset = self.download_cart[0]
-            self.current_asset = next_asset
-            active_worker = self.singleDownLoad(next_asset)
-            if active_worker is None:
-                self.advance_sequential_cart_queue()
-        else:
-            self.cart_processing = False
-            self.masterCartLabel.setText("All items downloaded successfully! Cart empty.")
-            self.checkoutBtn.setEnabled(False)
-            self.current_asset = None
-            self.glob.MainWindow.syncRepositories()
-            QMessageBox.information(self.parent, "Success!", "All assets in your cart have been downloaded successfully!")
+        for asset in batch_queue:
+            self.current_asset = asset 
+            active_worker = self.singleDownLoad(asset) 
+            if active_worker is not None:
+                self.active_parallel_workers.append((asset, active_worker))
+                
+        self.current_asset = None
 
     def finish_parallel_load(self):
+        """Monitors all parallel threads, updates the queue, and avoids freezing the render engine."""
+        # Clean up the specific window belonging to the worker that just finished
         sender_worker = self.sender()
         if sender_worker and hasattr(sender_worker, 'associated_window') and sender_worker.associated_window is not None:
             sender_worker.associated_window.progress.close()
@@ -759,9 +812,16 @@ class DownLoadImport(QVBoxLayout):
             self.download_cart.clear()
             self.masterCartLabel.setText("All items downloaded successfully! Cart empty.")
             self.checkoutBtn.setEnabled(False)
+            
+            # ONE SINGLE COMPLETION PROMPT BOX
             QMessageBox.information(self.parent, "Done!", "All assets in your cart have been downloaded successfully!")
         else:
             self.masterCartLabel.setText(f"Downloading: {len(still_running)} tasks remaining...")
+
+
+    def process_cart_queue(self):
+        pass
+
 
     def cleanUp(self):
         fullpath = self.parent.glob.lastdownload
@@ -770,81 +830,13 @@ class DownLoadImport(QVBoxLayout):
             try:
                 if os.path.isfile(fullpath):
                     os.remove(fullpath)
+                # Safe checking: Only drop directory container if empty
                 if os.path.exists(fpath) and not os.listdir(fpath):
                     os.rmdir(fpath)
             except Exception as e:
                 self.env.logLine(1, f"Clean Up asset warning: {str(e)}")
+                
             self.parent.glob.lastdownload = None
             self.filename.setText("")
             self.fnameinserted()
-    def syncFullRepositoryCall(self):
-        """Initializes a full database sweep loop pass, downloading every asset in the JSON list sequentially."""
-        if self.bckproc is not None:
-            ErrorBox(self.parent, "Another background installation process is currently active. Please wait.")
-            return
 
-        if self.assetjson is None:
-            self.assetjson = self.assets.alistReadJSON(self.env, self.assetlistpath)
-
-        if not self.assetjson:
-            ErrorBox(self.parent, "Asset database list layout is missing or empty. Please refresh lists first.")
-            return
-
-        # Extract all asset identification keys straight out of your loaded catalog mapping array
-        self.repo_sync_queue = list(self.assetjson.keys())
-        self.total_repo_sync_count = len(self.repo_sync_queue)
-        
-        if self.total_repo_sync_count == 0:
-            return
-
-        self.cart_processing = True
-        self.syncRepoButton.setEnabled(False)
-        
-        # Open up your standalone global application tracking progress window box widget
-        self.prog_window = MHProgWindow("Synchronizing Complete Asset Repository", 1000)
-        self.prog_window.progress.forceShow()
-        
-        # Fire up the loop tracking runner pass for item index row 0
-        self.advance_full_repo_sync_loop()
-
-    def advance_full_repo_sync_loop(self):
-        """Processes the next element waiting in your master repository synchronization queue array."""
-        sender_worker = self.sender()
-        if sender_worker and hasattr(sender_worker, 'associated_window') and sender_worker.associated_window is not None:
-            sender_worker.associated_window.progress.close()
-            sender_worker.associated_window = None
-
-        if self.bckproc is not None:
-            self.assets.cleanupUnzip()
-            self.bckproc = None
-
-        if not hasattr(self, 'repo_sync_queue') or not self.repo_sync_queue:
-            # SCRIPT SYNC RUN FULLY COMPLETE! Clean up all remaining system variables and refresh UI layouts
-            self.cart_processing = False
-            if self.prog_window is not None:
-                self.prog_window.progress.close()
-                self.prog_window = None
-                
-            self.syncRepoButton.setEnabled(True)
-            self.syncRepoButton.setText(f"Sync Full Repository ({len(self.json)} Items)")
-            self.glob.MainWindow.syncRepositories()
-            
-            QMessageBox.information(self.parent, "Mirror Sync Complete!", "The entire asset repository has been completely downloaded and mirrored successfully onto your local system drive folders!")
-            return
-
-        # Isolate the next raw text target string key inside the array queue index
-        next_target_asset = self.repo_sync_queue.pop(0)
-        current_idx = self.total_repo_sync_count - len(self.repo_sync_queue)
-        progress_ratio = int((current_idx / self.total_repo_sync_count) * 1000)
-        
-        # Paint the active download status updates straight across your UI progress banner elements
-        status_msg = f"Syncing Complete Repo ({current_idx}/{self.total_repo_sync_count}): {next_target_asset}"
-        if self.prog_window:
-            self.prog_window.setValueAndText(progress_ratio, status_msg)
-
-        # Execute your existing file download framework worker logic tracking methods
-        worker = self.singleDownLoad(next_target_asset)
-        
-        if worker is None:
-            # If an entry maps a bad file block or returns an immediate initialization error, jump to next loop sequence
-            self.advance_full_repo_sync_loop()

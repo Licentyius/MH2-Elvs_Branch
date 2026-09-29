@@ -277,6 +277,7 @@ class baseClass():
         #
         if self.pose_skeleton is not None:
             self.pose_skeleton.newGeometry()
+            self.pose_skeleton.reloadSkeleton()
 
         # finally mark MHM as used
         #
@@ -497,9 +498,15 @@ class baseClass():
         return None
 
     def getAttachedByFilename(self, filename):
-        for elem in self.attachedAssets:
-            if elem.filename == filename:
-                return elem
+        if self.env.osindex == 0:
+            fname = filename.lower()
+            for elem in self.attachedAssets:
+                if elem.filename.lower() == fname:
+                    return elem
+        else:
+            for elem in self.attachedAssets:
+                if elem.filename == filename:
+                    return elem
         return None
 
     def getAttachedOrBase(self, filename):
@@ -664,6 +671,13 @@ class baseClass():
         self.glob.openGLWindow.Tweak()
         self.glob.midColumn.setSizeInfo()
 
+    def getVirtualBonePosition(self, name):
+        skeleton = self.pose_skeleton if self.in_posemode else self.default_skeleton
+        if skeleton:
+            return skeleton.getVirtualBonePosition(name, self.in_posemode)
+        else:
+            return None, None
+
     def hasPoses(self):
         """
         return number if pose is available and number of frames
@@ -766,6 +780,26 @@ class baseClass():
         self.setNoPose()
         self.glob.openGLWindow.scene.newFloorPosition()
         self.glob.openGLWindow.Tweak()
+
+    def detachAssetByName(self, path):
+        """
+        detaches assets mentioned by filename
+        """
+
+        if self.getAttachedByFilename(path) is not None:
+            self.delAsset(path)
+            return
+        if self.skeleton and self.skeleton.filename == path:
+            self.delSkeleton(path)
+            return
+        if self.bvh and self.bvh.filename == path:
+            self.delPose(path)
+            return
+        if self.posemodifier and self.posemodifier.filename == path:
+            self.delPose(path)
+            return
+        if self.expression and self.expression.filename == path:
+            self.delExpression(path)
 
     def getFaceUnits(self):
         if self.faceunits is None:
@@ -957,8 +991,8 @@ class baseClass():
         """
         if self.glob.parallel is None:
             self.glob.parallel = WorkerThread(self.applyAllTargets, None)
-            self.glob.parallel.start()
             self.glob.parallel.finished.connect(self.finishApply)
+            self.glob.parallel.start()
 
     def nonParApplyTargets(self):
         """

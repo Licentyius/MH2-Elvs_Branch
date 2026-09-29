@@ -1,6 +1,6 @@
 #############################################################################
 ##
-## Plugin_panel to add custom features. V1.2
+## Plugin_panel to add custom features. V1.3
 ## Part of the MakeHuman 2 Project contributed by Elvaerwyn_MH2 2026
 ##
 #############################################################################
@@ -279,7 +279,8 @@ class CommunityPanel(QtWidgets.QWidget):
                     self.env.logLine(1, f"Successfully loaded plugin: {raw_module_name}")
                 except Exception as e:
                     self.last_error = f"Failed compiling script path {raw_module_name}: {e}"
-                    return False
+                    self.env.logLine(1, self.last_error)
+
         return True
 
     def toggle_community(self, name, state):
@@ -302,15 +303,15 @@ class CommunityPanel(QtWidgets.QWidget):
             for hook_name in ["unload_extension", "shutdown_extension"]:
                 if hasattr(module, hook_name):
                     try:
-                        getattr(module, hook_name)()
+                        getattr(module, hook_name)(self.glob)
                         break
                     except Exception as e:
                         self.env.logLine(1, f"module cleanup, trace failure on {name}: {e}")
             self.active_extensions.pop(name, None)
 
-    # =========================================================================
+    # ==================
     # UI Layout Helpers
-    # =========================================================================
+    # ==================
     def add_section_header(self, text):
         header = QtWidgets.QLabel(text, self.scroll_widget)
         header.setStyleSheet("font-weight: bold; color: #888888; margin-top: 8px; font-size: 11px; text-transform: uppercase;")
@@ -321,6 +322,38 @@ class CommunityPanel(QtWidgets.QWidget):
         checkbox.stateChanged.connect(toggle_callback)
         self.scroll_layout.addWidget(checkbox)
         self.checkboxes[internal_id] = checkbox
+    # ================
+    # DROPDOWN TOGGLE 
+    # ================
+    def hideEvent(self, event):
+        """Triggers automatically when the core loop hides the inner panel contents."""
+        super().hideEvent(event)
+        
+        # 1. Travel up the widget tree to find the structural QDockWidget container
+        current_node = self.parentWidget()
+        while current_node is not None:
+            # Check if this node is the actual window dock wrapper frame
+            if current_node.inherits("QDockWidget") or current_node.__class__.__name__ == "QDockWidget":
+                print("[Prop Studio UI] Target structural window dock identified. Forcing complete collapse...")
+                
+                # Force the outer structural container frame to close completely
+                current_node.hide()
+                current_node.close()
+                
+                # Alert the main window layout manager to unregister the frame and collapse the empty space
+                if self.glob and hasattr(self.glob, 'MainWindow') and self.glob.MainWindow:
+                    try:
+                        self.glob.MainWindow.removeDockWidget(current_node)
+                    except Exception:
+                        pass
+                break
+            current_node = current_node.parentWidget()
+
+        # 2. Tell the shared OpenGL canvas viewport to repaint over the freed space
+        if self.glob and getattr(self.glob, 'openGLWindow', None):
+            if hasattr(self.glob.openGLWindow, 'update'):
+                self.glob.openGLWindow.update()
+
     # =========================================================================
     # EXTENSION HOT-REFRESH ENGINE (V1.3 - SEQUENTIAL PIPELINE CLEANUP)
     # =========================================================================

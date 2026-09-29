@@ -1,6 +1,6 @@
 """
     License information: data/licenses/makehuman_license.txt
-    Author: black-punkduck, Elvaerwyn_MH2 Makehuman 2 2026 V1.1
+    Author: black-punkduck, Elvaerwyn_MH2 Makehuman 2 2026 V1.2
 
     The mainwindow containing menus, left, center and right column
 
@@ -10,7 +10,7 @@
 from PySide6.QtWidgets import (
     QAbstractItemView, QDialogButtonBox, QFrame, QGroupBox, QHBoxLayout,
     QLabel, QListWidget, QMainWindow, QMdiArea, QMdiSubWindow,
-    QMessageBox, QPushButton, QScrollArea, QSizePolicy, QSplitter,
+    QMessageBox, QScrollArea, QSizePolicy, QSplitter,
     QVBoxLayout, QWidget
 )
 
@@ -29,7 +29,7 @@ from gui.fileactions import BaseSelect, SaveMHMForm
 from gui.downloads import DownLoadImport
 from gui.playtimer import MHPlayTimer
 from gui.exporter import ExportLeftPanel, ExportRightPanel, ExporterValues
-from gui.poseactions import AnimPlayer, AnimPlayerValues, AnimMode
+from gui.poseactions import AnimPlayer, AnimPlayerValues, AnimMode, AnimSkeleton
 from gui.poseeditor import AnimExpressionEdit, AnimPoseEdit
 from gui.slider import ScaleComboArray
 from gui.imageselector import ImageSelection
@@ -194,7 +194,6 @@ class MHMainWindow(QMainWindow):
         # EMBEDDED COMMUNITY PANEL MOUNT (ZERO DUPLICATE LAUNCHES)
         # ==============================================================================
         set_menu.addSeparator()
-        from gui.plugin_panel import CommunityPanel
         
         # 1. Instantiate the widget permanently inside your main window memory on startup
         self.community_extension_panel = CommunityPanel(app_reference=self, glob_reference=glob)
@@ -202,16 +201,18 @@ class MHMainWindow(QMainWindow):
         def display_embedded_panel():
             """
             Dynamic Show/Hide Toggle Loop.
-            Only applies window focus flags when opening to prevent thread freezes!
+            Natively toggles the outer layout container column to completely prevent frozen blank panels!
             """
-            # If the panel is already open on screen, hide it cleanly and exit!
             if self.community_extension_panel.isVisible():
                 self.community_extension_panel.hide()
-                print("[Menu Toggle] Community Extensions panel safely hidden.")
+                if self.visRightColumn:
+                    self.visRightColumn.setVisible(False)
+                print("[Menu Toggle] Community Extensions panel and outer column framework safely collapsed.")
                 return 
                 
-            # If it is currently hidden, proceed with your original mounting logic:
+            # If it is currently hidden, proceed with mounting and displaying the layout:
             if self.visRightColumn:
+                self.visRightColumn.setVisible(True)
                 self.visRightColumn.show()
                 
             if self.community_extension_panel.parent() is None:
@@ -220,10 +221,7 @@ class MHMainWindow(QMainWindow):
                 elif self.ToolBox and getattr(self.ToolBox, 'layout', None) and self.ToolBox.layout():
                     self.ToolBox.layout().addWidget(self.community_extension_panel)
 
-            # =====================================================================
-            # >>> CONDITIONAL FOCUS LOCK (STOPS INTENSE THREAD FREEZES) >>>
-            # =====================================================================
-            # We move these lines here so they ONLY fire when showing the panel!
+            # Conditional visibility activation maps focus back to your extensions tree smoothly
             self.community_extension_panel.show()
             self.community_extension_panel.raise_()
             self.community_extension_panel.setFocus()
@@ -384,7 +382,7 @@ class MHMainWindow(QMainWindow):
             elem["func"].prepare()
             elem["menu"] = self.addActCallBack(self.animenu, elem["name"], self.anim_call)
 
-    def syncRepositories(self):
+    def syncRepositories(self, vis=False):
         """
         this function is used after e.g. a download took place or direct forced sync
         """
@@ -392,9 +390,16 @@ class MHMainWindow(QMainWindow):
         for elem in self.equipment:
             if elem["func"] is not None:
                 elem["func"].prepare(cache)
+                if vis:
+                    elem["func"].rescanFolder()
+
         self.charselect.prepare(cache)
+        if vis:
+           self.charselect.rescanFolder()
         for elem in self.animation:
             elem["func"].prepare(cache)
+            if vis:
+                elem["func"].rescanFolder()
         self.glob.baseClass.markAllAttachedAssets()
 
 
@@ -621,6 +626,7 @@ class MHMainWindow(QMainWindow):
                 self.leftColumn.setTitle("Import file :: parameters")
                 dlform = DownLoadImport(self, self.graph.view, self.setWindowTitle)
                 self.LeftBox.addLayout(dlform)
+                return
             self.LeftBox.addStretch()
             return
 
@@ -656,6 +662,8 @@ class MHMainWindow(QMainWindow):
             if self.category_mode == 0:
                 self.leftColumn.setTitle("Rigs :: filter")
                 layout = self.animation[self.category_mode]["func"].leftPanel()
+                skel = AnimSkeleton(self.glob, layout)
+                layout.addWidget(skel)
                 self.LeftBox.addLayout(layout)
             elif self.category_mode == 1:
                 self.leftColumn.setTitle("Poses :: filter")
