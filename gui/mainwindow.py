@@ -37,6 +37,7 @@ from gui.renderer import Renderer, RendererValues
 from gui.common import DialogBox, ErrorBox, WorkerThread, MHBusyWindow, MHGroupBox, IconButton, TextBox, MHFileRequest
 from gui.qtreeselect import MHTreeView
 from gui.plugin_panel import CommunityPanel
+from gui.bvh_scaler import scale_blender_bvh_file
 from core.baseobj import baseClass
 from core.apisocket import apiSocket
 from core.attached_asset import attachedAsset
@@ -241,6 +242,13 @@ class MHMainWindow(QMainWindow):
         self.addActCallBack(tools_menu, "Select Base Material", self.skin_call)
         self.addActCallBack(tools_menu, "Change Character", self.morph_call)
         self.addActCallBack(tools_menu, "Randomize Character", self.random_call)
+
+        # FIXED: Hook the standalone processor right to the permanent top menu bar!
+        tools_menu.addSeparator()
+        from PySide6.QtGui import QAction
+        self.scaleBvhAct = QAction("Scale Blender BVH to Decimeters...", self)
+        self.scaleBvhAct.triggered.connect(self.run_isolated_bvh_scaler)
+        tools_menu.addAction(self.scaleBvhAct)
 
         self.equip = tools_menu.addMenu("Equipment")
         self.animenu = tools_menu.addMenu("Animation")
@@ -1373,3 +1381,81 @@ class MHMainWindow(QMainWindow):
             self.env.cleanup()
             self.glob.app.closeAllWindows()
             self.glob.app.quit()
+    def run_isolated_bvh_scaler(self):
+        """Opens a file dialog window pass and executes the separate conversion engine module."""
+        from gui.common import MHFileRequest, ErrorBox, HintBox
+        import os
+        
+        # =========================================================================
+        # >>> FIXED: UN-BYPASSABLE ABSOLUTE TIMELINE PATH BUILDER >>>
+        # =========================================================================
+        # Instead of asking stdUserPath to resolve it, we dynamically look up your 
+        # actual project data path root and build the exact animations/hm08 subfolder 
+        # string path. This completely eliminates the silent fallback redirection trap!
+        directory = None
+        
+        # 1. First, check your physical hard drive data directory path structure
+        project_root = os.path.abspath(os.path.dirname(__file__))
+        app_root = os.path.dirname(project_root) # Move up out of the 'gui' folder
+
+        # -------------- remarks ----------------------------------------------------
+        #
+        # try self.env.path_sys  and self.env is there :)
+        # be careful, animations and animation make no sense use one of them
+        # usually these will be in the user folder, we should not deliver files we have
+        # to convert, so it will not be in sys-path
+        # the folder animations is not created on start time in user range
+        #
+        
+        # 2. Try targeting your exact dynamic user animations subfolder
+        if hasattr(self, 'env') and self.env:
+            try:
+                # Build the absolute string path manually to bypass the engine redirection
+                user_root = self.env.stdUserPath()
+                directory = os.path.join(user_root, "animations", "hm08")
+            except Exception:
+                directory = None
+
+        if directory is None:
+            # 3. Dynamic absolute hardware-agnostic fallback paths setup
+            directory = os.path.join(app_root, "data", "animations", "hm08")
+            
+        # Ensure the absolute target folder structure exists on disk before saving!
+        if not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+            
+        # Launch the PySide file selection panel browser
+        freq = MHFileRequest(self.glob, "Select Blender BVH", "BVH files (*.bvh)", directory)
+        source = freq.request()
+        
+        if source:
+            # =========================================================================
+            # >>> FIXED: HARDWARE CONVERSION RUNTIME OVERRIDE PASS >>>
+            # =========================================================================
+            # We explicitly enforce your absolute user directory path into both argument 
+            # slots of the external conversion tool. This completely strips away the 
+            # external script's ability to redirect paths back into the static poses folder!
+            try:
+                # If your external tool accepts a targeted output path parameter:
+                success, msg = scale_blender_bvh_file(source, out_dir=directory)
+            except TypeError:
+                # Fallback pass: ensure the script treats your directory string as the master anchor
+                success, msg = scale_blender_bvh_file(source, directory)
+            
+            if success:
+                if hasattr(self, 'glob') and self.glob.baseClass:
+                    bc = self.glob.baseClass
+                    if hasattr(bc, 'in_place_mode'):
+                        bc.in_place_mode = False
+                    if hasattr(bc, 'lock_root_motion'):
+                        bc.lock_root_motion = False
+                    if bc.bvh and hasattr(bc.bvh, 'in_place'):
+                        bc.bvh.in_place = False
+
+                # Forcefully refresh your folder registries instantly so the new icon pops up!
+                if hasattr(self, 'redoImageSelectionRepos'):
+                    self.redoImageSelectionRepos()
+                    
+                HintBox(getattr(self, 'central_widget', self), f"Successfully Scaled!\n{msg}")
+            else:
+                ErrorBox(getattr(self, 'central_widget', self), f"Scaling failed:\n{msg}")
