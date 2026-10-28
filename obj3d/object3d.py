@@ -117,6 +117,8 @@ class object3d:
         use a relative path to object
         """
         if pathname is not None and self.material is not None:
+            if self.env.osindex == 0:
+                pathname = os.path.normcase(pathname).replace("\\", "/")
             return self.material.loadMatFile(pathname)
         else:
             return True
@@ -125,6 +127,8 @@ class object3d:
         if self.material is not None:
              self.material.freeTextures()
         self.initMaterial()
+        if self.env.osindex == 0:
+            pathname = os.path.normcase(pathname).replace("\\", "/")
         return self.material.loadMatFile(pathname)
 
     def getMaterialFilename(self):
@@ -788,7 +792,6 @@ class object3d:
         """
         reset to original mesh + add all changes of non-macrotargets
         """
-        print ("+++ reset mesh and add non macro targets")
         self.resetMesh()
         targets = self.glob.Targets.modelling_targets
         for target in targets:
@@ -805,7 +808,6 @@ class object3d:
         """
         copy original mesh + add all changes of non-macrotargets
         """
-        print ("+++ Prepare Buffer")
         self.gl_coord_mn =  self.gl_coord.copy()
         self.gl_coord_mm = np.zeros_like(self.gl_coord)
 
@@ -828,7 +830,6 @@ class object3d:
         after changing a macro it will be added
         make sure to write in same buffer (out will avoid to get a new one)
         """
-        print ("+++ Add macro to character")
         np.add(self.gl_coord_mm, self.gl_coord_mn, out=self.gl_coord)  
         self.overflowCorrection(self.gl_coord)
         self.gl_coord_mm = np.zeros_like(self.gl_coord)

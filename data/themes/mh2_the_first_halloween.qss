@@ -1,0 +1,529 @@
+/*
+ * Elvaerwyn MH2 Official MH 2 Colors Steel-Theme MakeHuman II CSS file-Layout Vs.
+ * True Final Polished Version: MH2 Steel Grey Base with Halloween Accents 2026
+ */
+
+/* =================================================================== */
+/*   60% GLOBAL CANVAS: Original Matte Steel Grey Backdrop             */
+/* =================================================================== */
+QWidget {
+    color: #FFFFFF;
+    font-weight: bold;
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.0, fx: 0.5, fy: 0.5,
+                stop: 0 #3c3c3c,    /* Original charcoal center preserved */
+                stop: 0.6 #2b2b2b,  
+                stop: 1 #000000);   /* Deep black edges */
+}
+
+/* =================================================================== */
+/*   30% STRUCTURAL PANELING: Unused vs Used Interactive States        */
+/* =================================================================== */
+
+/* 1. UNUSED/DEFAULT STATE: High-Contrast Pumpkin Orange and Toxic Green */
+QFrame#groupbox, QGroupBox, QListWidget, QTreeView, QTableView, QMenu {
+    border-radius: 8px;
+    border-width: 3px;
+    border-style: solid;
+    border-top-color: #FF7518;    /* High-Contrast Pumpkin Orange top boundary */
+    border-bottom-color: #FF7518; /* High-Contrast Pumpkin Orange bottom boundary */
+    border-left-color: #39FF14;   /* Piercing Neon Toxic Green left wall */
+    border-right-color: #39FF14;  /* Piercing Neon Toxic Green right wall */
+
+    /* Main inner canvas stays dark grey exactly as built */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1, fx: 0.5, fy: 0.5,
+                stop: 0 #989898,    /* Steel grey inner core */
+                stop: 0.8 #323232,  /* Dark charcoal mid-tones */
+                stop: 1.0 #1E1E1E); /* Fades into the panel border edge */
+}
+
+/* 2. USED/ACTIVE STATE: Entire perimeter unifies into Solid Witch Purple when interacting */
+QFrame#groupbox:focus, QGroupBox:focus, QGroupBox:flat:focus,
+QListWidget:focus, QTreeView:focus, QTableView:focus {
+    border: 3px solid #4B0082;     /* Solid Deep Indigo Witch Purple */
+}
+
+/* Little boxes for information/main window default settings */
+QListWidget {
+    color: #FFFFFF;
+    selection-background-color: #4B0082; /* Active item background highlights in Witch Purple */
+}
+
+/* Header sidebar frames flash Witch Purple on mouse hover */
+QFrame#gboxnontitle:hover, QFrame#gboxseltools:hover {
+    border-color: #4B0082;
+}
+/* =================================================================== */
+/*   BUTTONS & ACTION ITEMS                                            */
+/* =================================================================== */
+QPushButton {
+    color: #000000;            /* Sharp black text over bright button surfaces */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                 stop:0 #ffffff, stop:0.5 #e0e0e0, stop:1 #ffffff);
+    border: 3px solid #4B0082; /*Witch Purple*/
+    border-radius: 6px;
+}
+
+QPushButton:hover {
+    border: 2px solid #FF7518; /* Flashes Pumpkin Orange on mouse hover */
+}
+
+/* Active Used Button State */
+QPushButton:checked, QPushButton:pressed {
+    /* Muted steel frames sweeping into a magical Witch Purple center */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                 stop:0 #39FF14, stop:0.5 #4B0082, stop:1 #989898) !important;
+    color: #FFFFFF;            /* White text contrast over deep purple active field */
+    border: 4px solid #FFFFFF !important;
+}
+
+/* =================================================================== */
+/*   MENU & NAVIGATION PANELS                                          */
+/* =================================================================== */
+QMenuBar {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #444444, stop:0.5 #1e1e1e, stop:1 #000000);
+    color: #FFFFFF;
+}
+
+QMenuBar::item:selected, QMenu::item:selected {
+    /* Menu items highlight in an arcade vertical sweep from Toxic Green to dark grey */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #39FF14, stop:1 #323232); 
+    color: #FFFFFF;
+}
+/* =================================================================== */
+/*   SLIDERS & PROGRESS CHUNKS                                         */
+/* =================================================================== */
+QSlider::groove:horizontal {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #000000, stop:0.5 #333333, stop:1 #000000);
+    height: 10px;
+    border-radius: 5px;
+    border: 1px solid #FF7518; /* Pumpkin Orange tracking line */
+}
+
+QSlider::groove:vertical {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                stop:0 #000000, stop:0.5 #333333, stop:1 #000000);
+    width: 10px;
+    border-radius: 5px;
+    border: 1px solid #FF7518;
+}
+
+QSlider::sub-page:horizontal {
+    /* Filled channel tracking shifts to an eye-catching Pumpkin Orange */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #989898, stop:0.5 #FF7518, stop:1 #323232); 
+    border-radius: 5px;
+    border: 1px solid #FF7518;
+}
+
+QSlider::sub-page:vertical {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #989898, stop:0.5 #FF7518, stop:1 #323232); 
+    border-radius: 5px;
+    border: 1px solid #FF7518;
+}
+
+QSlider::add-page:vertical {
+    /* Unfilled channel tracking uses a deep, calming Toxic Green */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                stop:0 #989898, stop:0.5 #39FF14, stop:1 #323232); 
+    border-radius: 5px;
+    border: 1px solid #39FF14;
+}
+
+QSlider::handle:horizontal {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #ffffff, stop:1 #bbbbbb); /* Retained original steel handle */
+    border: 2px solid #000000;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+}
+
+QSlider::handle:vertical {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                stop:0 #ffffff, stop:1 #bbbbbb);
+    border: 2px solid #000000;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+}
+
+QSlider::groove:hover {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #000000, stop:0.5 #555555, stop:1 #000000);
+    border: 1px solid #4B0082 !important; /* Track glows Witch Purple on hover */
+}
+
+QSlider::handle:hover {
+    /* Handle flares to full Pumpkin Orange when cursor passes over */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #ffffff, stop:1 #FF7518); 
+    border: 2px solid #4B0082; /* Wrapped in a Witch Purple trim line */
+}
+
+QSlider::groove:disabled {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #323232, stop:0.5 #888888, stop:1 #323232);
+    height: 14px;
+}
+
+QSlider::sub-page:disabled {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #323232, stop:0.5 #888888, stop:1 #323232);
+    border-radius: 5px;
+    border: 3px solid #1E1E1E;
+}
+
+QProgressBar {
+    background-color: #000000;
+    color: #FFFFFF;
+    border: 1px solid #989898;
+    text-align: center;
+    border-radius: 6px;
+}
+
+QProgressBar::chunk {
+    /* Halloween Arcade Beam: Moves smoothly from grey through Toxic Green to Pumpkin Orange */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                stop:0 #323232, stop:0.2 #39FF14, stop:0.5 #FF7518, stop:1 #323232); 
+    border-radius: 5px;
+}
+/* =================================================================== */
+/*   HEADERS, LABELS & SELECTIONS                                      */
+/* =================================================================== */
+QHeaderView {
+    background-color: #989898;     /* Solid steel-grey button bar base */
+}
+
+QHeaderView::section {
+    background-color: #989898;     /* Solid steel-grey item canvas */
+    color: #FFFFFF;                /* High-contrast white text label */
+    padding: 4px;
+    border: 1px solid #FF7518;     /* orange separation boundary grid */
+}
+
+/* Header Panel Blocks */
+QLabel#groupbox {
+    qproperty-alignment: AlignCenter;
+    border: 2px solid #39FF14; /* Toxic Green framing edge */
+    border-radius: 4px;
+    max-height: 16px;
+    font: bold 14px;
+    color: #FFFFFF;
+
+    /* Matches the 'bleed' effect layout, but with a spooky Toxic Green edge ring */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1,
+                fx: 0.5, fy: 0.5,
+                stop: 0 #989898,    /* Preserved original metallic center */
+                stop: 0.7 #323232,  /* Preserved dark mid-tones */
+                stop: 1.0 #274E13); /* VISIBLE: Deep Toxic Green edge bleed */
+}
+
+/* Tab Bar Structures */
+QTabBar::tab:selected {
+    border: 3px solid #39FF14; /* Connected to the main box border */
+    border-bottom: none; 
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 4px 10px;
+    color: #FFFFFF;
+
+    /* Active selected tabs bleed into a warm Toxic Green edge glow */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1,
+                fx: 0.5, fy: 0.5,
+                stop: 0 #989898,
+                stop: 0.7 #323232,
+                stop: 1.0 #274E13); /* VISIBLE: Toxic Green active edge */
+}
+
+/* Inactive Tabs */
+QTabBar::tab {
+    border: 1px solid #555555;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 4px 10px;
+    color: #FFFFFF; 
+
+    /* Dimmed Festive Glow: Replaces deep purple transition with muted pumpkin orange layers */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1,
+                fx: 0.5, fy: 0.5,
+                stop: 0 #4A2306,   /* Muted deep orange center */
+                stop: 0.6 #FF7518, /* VISIBLE: Pumpkin Orange permanent transition */
+                stop: 1.0 #323232); /* Fades perfectly into charcoal panel base */
+}
+
+QTabBar::tab:hover {
+    color: #FFFFFF; 
+    /* Flashes a warm Pumpkin Orange core on mouse hover */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1,
+                fx: 0.5, fy: 0.5,
+                stop: 0 #FF7518,
+                stop: 1.0 #1e1e1e);
+}
+
+QLabel {
+    background-color: transparent;
+    margin-top: 6px;
+}
+
+QToolTip {
+    border: 1px solid #FF7518; /* Pumpkin Orange tooltip frame perimeter */
+    background-color: #323232; /* Steel grey background card */
+    padding: 1px;
+    opacity: 255;
+    color: #FFFFFF;
+}
+
+/* Active Highlight Row Elements */
+QListWidget::item:selected, QTreeView::item:selected, QTableView::item:selected {
+    /* Selections hold a Pumpkin Orange center blast over a dark base */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 0.8,
+                fx: 0.5, fy: 0.5,
+                stop: 0 #FF7518, stop: 1 #1e1e1e); 
+    color: #FFFFFF;
+}
+
+QTreeView {
+    selection-color: #FFFFFF;              /* White text contrast over purple selection bar */
+    selection-background-color: #4B0082;   /* Deep Witch Purple selection */
+    color: #FFFFFF;
+    show-decoration-selected: 0;
+}
+/* =================================================================== */
+/*   SUB-WINDOWS INTERIOR HOVER MASK MATRIX                            */
+/* =================================================================== */
+QGroupBox#subwindow {
+    font: bold 13px;
+    padding-top: 25px;
+    margin-top: 10px;
+    
+    /* Alternating top/bottom Orange and side Toxic Green frames when not actively focused */
+    border-width: 3px;
+    border-style: solid;
+    border-top-color: #FF7518;    
+    border-bottom-color: #FF7518; 
+    border-left-color: #39FF14;   
+    border-right-color: #39FF14;  
+
+    /* Main inner canvas stays dark grey  */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.5, fx: 0.5, fy: 0.5,
+                stop: 0 #989898, stop: 1 #323232); 
+}
+
+QGroupBox#subwindow:focus, QGroupBox#subwindow:flat:focus {
+    /* Instantly unifies all 4 edges to a Solid Deep Indigo Witch Purple when clicked */
+    border: 3px solid #4B0082; 
+}
+
+/* Fix the Header (Title) of the Modeling Window */
+QGroupBox::title#subwindow {
+    color: #FFFFFF; 
+    /* Sweeps vertically from a piercing Toxic Green down into a rich Witch Purple anchor */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1,
+                stop:0 #39FF14, stop:1 #4B0082); 
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 2px 20px;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+}
+
+/* Global Container Box Hover Updates */
+QFrame[frameShape="6"]:hover,
+QFrame#gboxnontitle:hover,
+QFrame#gboxseltools:hover {
+    border: 2px solid #39FF14 !important; /* Toxic Green frame lines on panel hover */
+}
+
+/* little box lower right layout */
+QLabel#sizeinfo {
+    color: white;
+    border: 3px solid #39FF14; /* Toxic Green border */
+    border-radius: 8px;
+    margin: 5px;
+    padding: 10px;
+    padding-right: 15px;
+
+    background:
+        /* 3. The "Fade" layer - white with low opacity, soft texture spray intact */
+        qradialgradient(cx: 0.5, cy: 0.5, radius: 1, fx: 0.5, fy: 0.5,
+            stop: 0 rgba(255, 255, 255, 0.4), stop: 1 transparent),
+        /* 1. The Stamp (Top-Right) - Uses alpha pumpkin orange */
+        qradialgradient(cx: 0.9, cy: 0.1, radius: 0.4, fx: 0.9, fy: 0.1,
+            stop: 0 rgba(255, 117, 24, 0.2), stop: 1 transparent),
+        /* 2. Main Background - Kept exact dark steel grey canvas values */
+        qradialgradient(cx: 0.5, cy: 0.5, radius: 1.1, fx: 0.5, fy: 0.5,
+            stop: 0 #323232, stop: 1.0 #1e1e1e);
+
+    image: url(data/icons/faded_logo.png);
+    qproperty-alignment: 'AlignTop | AlignRight';
+}
+
+QLabel#sizeinfo:hover {
+    color: black;                  /* Smooth black text switch over the bright hallows hover bar */
+    border: 3px solid #1e1e1e;
+
+    /* MAGICAL GLOW: Stacking exact original physics with Toxic Green and Pumpkin Orange sweeps */
+    background:
+        /* Layer 1: The faint dark glow top-right stamp overlay preserved */
+        qradialgradient(cx: 0.9, cy: 0.1, radius: 0.4, fx: 0.9, fy: 0.1,
+                        stop: 0 rgba(0, 0, 0, 0.15), stop: 1 transparent),
+        /* Layer 2: Main Linear alpha magical sweep - Toxic Green into Pumpkin Orange */
+        qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                        stop: 0 rgba(57, 255, 20, 0.75), stop: 1 rgba(255, 117, 24, 0.85));
+
+    image: url(data/icons/faded_logo.png);
+}
+
+QProgressBar#clickbar:hover {
+    border: 2px solid #39FF14 !important; /* Toxic Green framing line on hover */
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 1.0, fx: 0.5, fy: 0.5, 
+                stop: 0 #FF7518,   /* Brighter Pumpkin Orange highlight */
+                stop: 1.0 #323232);
+}
+
+/* =================================================================== */
+/*   SCROLLBARS, INPUTS, INDICATORS & ARROWS                           */
+/* =================================================================== */
+QTabWidget::pane {
+    border: 3px solid #39FF14; /* Toxic Green border */
+    top: -3px; 
+}
+
+QLineEdit, QSpinBox {
+    background-color: #1e1e1e;
+    border: 1px solid #39FF14; /* Toxic Green frame border */
+    padding: 2px;
+    color: #ffffff;
+}
+
+QComboBox {
+    background: #323232;
+    border: 1px solid #FF7518; /* orange */
+    border-radius: 3px;
+    padding: 1px 18px 1px 3px;
+    color: #ffffff;
+}
+
+QComboBox::drop-down {
+    border-left: 1px solid #989898;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #FF7518; /* Active target node flares Pumpkin Orange */
+    border: 1px solid #FFFFFF;
+    border-radius: 6px;
+}
+
+QRadioButton::indicator:unchecked, QCheckBox::indicator:unchecked {
+    background-color: #1e1e1e;
+    border: 1px solid #989898;
+    border-radius: 6px;
+}
+
+QCheckBox::indicator:unchecked {
+    border-radius: 0px; /* Standard square check box geometry */
+}
+
+QCheckBox::disabled {
+    color: #808080;
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+    border: 1px solid #39FF14; /* Hovering option circles flash Toxic Green */
+    background-color: #323232;
+}
+
+/* Metallic Scrollbar Containers */
+QScrollBar:vertical {
+    border: 1px solid #1e1e1e;
+    background: #000000;
+    width: 14px;
+    margin: 18px 0 18px 0; 
+}
+
+QScrollBar:horizontal {
+    border: 1px solid #1e1e1e;
+    background: #000000;
+    height: 14px;
+    margin: 0 18px 0 18px; 
+}
+
+QScrollBar::handle:vertical {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #ffffff, stop:0.5 #e0e0e0, stop:1 #ffffff); 
+    border: 2px solid #989898;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:horizontal {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #ffffff, stop:0.5 #e0e0e0, stop:1 #ffffff);
+    border: 2px solid #989898;
+    border-radius: 4px;
+    min-width: 20px;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    border: 4px solid #989898;
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #000000, stop:0.5 #4A2306, stop:1 #000000); 
+    border-radius: 4px;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:pressed, QScrollBar::sub-line:pressed {
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #4A2306, stop:0.5 #FF7518, stop:1 #4A2306);
+    border: 3px solid #000000;
+}
+
+QScrollBar::sub-line:vertical { height: 16px; subcontrol-position: top; }
+QScrollBar::add-line:vertical { height: 16px; subcontrol-position: bottom; }
+QScrollBar::sub-line:horizontal { width: 16px; subcontrol-position: left; }
+QScrollBar::add-line:horizontal { width: 16px; subcontrol-position: right; }
+QScrollBar::handle:hover { border-color: #39FF14; }
+QScrollBar::handle:pressed { background: #FF7518; }
+
+QComboBox::down-arrow {
+    image: url(data/icons/expand_halloween_down.png); 
+    subcontrol-origin: padding;
+    subcontrol-position: center;
+    padding-right: 2px;
+    padding-left: 4px;
+    width: 16px;
+    height: 16px;
+}
+
+QComboBox::down-arrow:hover {
+    image: url(data/icons/expand_halloween_down_hover.png);
+    background-color: rgba(57, 255, 20, 0.2); /* Toxic Green dropdown overlay */
+}
+
+/* =================================================================== */
+/*   TREEVIEW: Tree Single-Glow Fix Module                             */
+/* =================================================================== */
+QTreeView::branch {
+    background: transparent;
+}
+
+QTreeView::branch:adjoins-item {
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 0.4, fx: 0.5, fy: 0.5,
+                stop: 0 #FF7518,   /* Tree tracking node flares Pumpkin Orange by default */
+                stop: 0.7 #323232, 
+                stop: 1.0 transparent);
+    border-radius: 4px;
+}
+
+QTreeView::branch:adjoins-item:hover, QTreeView::item:hover {
+    background: qradialgradient(cx: 0.5, cy: 0.5, radius: 0.5, fx: 0.5, fy: 0.5,
+                stop: 0 #39FF14,   /* Node dots burst into an active Toxic Green on hover */
+                stop: 1.0 transparent);
+}
+
+QTreeView::branch:has-siblings:!adjoins-item {
+    background: transparent;
+    image: none;
+}
+
+QTreeView::branch:has-siblings:!adjoins-item,
+QTreeView::branch:has-siblings:adjoins-item,
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: none;
+}

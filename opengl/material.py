@@ -91,6 +91,8 @@ class Material:
         """
         path = os.path.join(self.mhmatdir, filename)
         if os.path.isfile(path):
+            if self.env.osindex == 0:
+                path = os.path.normcase(path).replace("\\","/")
             return path
 
         # try if we are in materials
@@ -98,6 +100,8 @@ class Material:
         if self.mhmatdir.endswith("materials"):
             path = os.path.join(self.mhmatdir[:-10], filename)
             if os.path.isfile(path):
+                if self.env.osindex == 0:
+                    path = os.path.normcase(path).replace("\\","/")
                 return path
 
         # try to get rid of first directory of filename (notation: unicode)
@@ -106,6 +110,8 @@ class Material:
             fname = "/".join (filename.split("/")[1:])
             path = os.path.join(self.mhmatdir, fname)
             if os.path.isfile(path):
+                if self.env.osindex == 0:
+                    path = os.path.normcase(path).replace("\\","/")
                 return path
 
 
@@ -116,16 +122,22 @@ class Material:
         #
         itype = "skins" if self.type == "base" else self.type
 
+        filename = filename.replace("\\", "/")
+
         if filename.startswith(itype):
             if "/" in filename:
                 filename = "/".join (filename.split("/")[1:])
 
         path = os.path.join(self.env.stdSysPath(itype), filename)
         if os.path.isfile(path):
+            if self.env.osindex == 0:
+                path = os.path.normcase(path).replace("\\","/")
             return path
 
         path = os.path.join(self.env.stdUserPath(itype), filename)
         if os.path.isfile(path):
+            if self.env.osindex == 0:
+                path = os.path.normcase(path).replace("\\","/")
             return path
         
         self.env.logLine(8, "unknown texture " + filename)
@@ -136,6 +148,9 @@ class Material:
         """
         mhmat file loader, TODO; cleanup in the end
         """
+        if self.env.osindex == 0:
+            path = os.path.normcase(path).replace("\\","/")
+
         self.filename = path
         self.mhmatdir = os.path.dirname(path)
 
@@ -254,16 +269,28 @@ class Material:
         path = self.env.formatPath(path)
         fobjdir = self.env.formatPath(self.mhmatdir)
 
+        # in case of windows, normalize name before comparison
+        #
+        if self.env.osindex == 0:
+            path = os.path.normcase(path).replace("\\","/")
+            fobjdir = os.path.normcase(fobjdir).replace("\\","/")
+
         if path.startswith(fobjdir):
             relpath = path[len(fobjdir)+1:]
             return relpath
 
         test = self.env.formatPath(self.env.stdSysPath(self.type))
+        if self.env.osindex == 0:
+            test = os.path.normcase(test).replace("\\","/")
+
         rest = None
         if fobjdir.startswith(test):
             rest = fobjdir[len(test)+1:]
         
         test = self.env.formatPath(self.env.stdUserPath(self.type))
+        if self.env.osindex == 0:
+            test = os.path.normcase(test).replace("\\","/")
+
         if fobjdir.startswith(test):
             rest = fobjdir[len(test)+1:]
 
