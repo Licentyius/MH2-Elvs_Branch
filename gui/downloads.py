@@ -1,6 +1,6 @@
 """
     License information: data/licenses/makehuman_license.txt
-    Author: black-punkduck, Elvaerwyn_MH2 2026 V1.5
+    Author: black-punkduck, Elvaerwyn_MH2 2026 V1.6
 
     Classes:
     * DownLoadImport
@@ -185,28 +185,46 @@ class DownLoadImport(QVBoxLayout):
         self.checkoutBtn.clicked.connect(self.on_checkout_clicked)
         panel_layout.addWidget(self.checkoutBtn)
         self.addWidget(checkout_panel) 
-        gb = QGroupBox("Asset Pack")
-        gb.setObjectName("subwindow")
+        # ====================================================
+        # NEW REPOSITORY SELECTION ARCHIVE DROPDOWN BOX
+        # ====================================================
+        repo_group = QGroupBox("3. Select Target Repository Archive")
+        repo_group.setObjectName("subwindow")
+        repo_layout = QVBoxLayout()
+        repo_layout.addWidget(QLabel("Choose Active License Distribution Pool:"))
+        
+        self.license_dropdown = QComboBox()
+        self.license_dropdown.addItems([
+            "Creative Commons BY (Attribution Archive)",
+            "Creative Commons 0 (Public Domain Pool)",
+            "AGPL (Copyleft Software Archive)"
+        ])
+        # Forces your local file registries to swap focus dynamically when clicked
+        self.license_dropdown.currentIndexChanged.connect(self.getAssetPackList)
+        self.license_dropdown.currentIndexChanged.connect(lambda: self.combo.clear() or self.combo.addItems(self.packitems))
+        repo_layout.addWidget(self.license_dropdown)
+        repo_group.setLayout(repo_layout)
+        self.addWidget(repo_group)
 
+        # ====================================================
+        # FIXED ASSET PACK ARCHIVE STAGING CONTAINER
+        # ====================================================
+        gb_pack = QGroupBox("4. Asset Pack Selection Staging")
+        gb_pack.setObjectName("subwindow")
         ilayout = QVBoxLayout()
-        ilayout.addWidget(QLabel("Select asset pack:"))
-
+        
+        ilayout.addWidget(QLabel("Select asset pack archive file:"))
         self.combo = QComboBox()
         self.combo.setFixedWidth(280)
         self.combo.addItems(self.packitems)
-        self.combo.setToolTip("An asset pack is a zip file.\nDownload of the standard assets can be done here.\nThey also can be downloaded manually\nand extracted with extract button below.")
         self.combo.currentIndexChanged.connect(self.packNameChanged)
         ilayout.addWidget(self.combo)
-
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(QLabel("or select and copy an URL from:"))
-        linklabel = QLabel()
-        ltext = "<a href='https://github.com'>Asset Packs</a>"
-        linklabel.setToolTip("Opens browser to search for asset packs.\nAn asset pack usually ends with .zip")
-        linklabel.setText(ltext)
-        linklabel.setOpenExternalLinks(True)
-        hlayout.addWidget(linklabel)
-        ilayout.addLayout(hlayout)
+        
+        # Mirror download informational layout guidelines
+        repo_link = "https://" + "github" + ".com/Makehuman-2/MH2_Asset_Repository_CC-By/releases"
+        link_label = QLabel(f"<a href='{repo_link}'>Alternative Web Browser Asset Release Archives</a>")
+        link_label.setOpenExternalLinks(True)
+        ilayout.addWidget(link_label)
 
         self.packname = QLineEdit("")
         self.packname.editingFinished.connect(self.packinserted)
@@ -216,45 +234,24 @@ class DownLoadImport(QVBoxLayout):
         self.dlbutton.clicked.connect(self.downLoad)
         ilayout.addWidget(self.dlbutton)
 
-        userpath = QLabel() 
-        metrics = QFontMetrics(userpath.font())
-        short_text = metrics.elidedText(self.env.path_userdata, Qt.ElideMiddle, 260)
-        userpath.setText("Destination user path for base: "  + self.env.basename + "\n" + short_text)
-        userpath.setToolTip("Files will be extracted to " + self.env.basename + " folders in " + self.env.path_userdata)
-        ilayout.addWidget(userpath)
-
-        if self.env.admin:
-            syspath = QLabel("Destination system path for base: " + self.env.basename + "\n" + self.env.path_sysdata)
-            syspath.setToolTip("Files will be extracted to " + self.env.basename + " folders in " + self.env.path_sysdata)
-            ilayout.addWidget(syspath)
-
-            self.userbutton = QRadioButton("Install in your user path")
-            self.userbutton.setChecked(True)
-            self.systembutton = QRadioButton("Install in system path")
-            self.userbutton.toggled.connect(self.setMethod)
-            self.systembutton.toggled.connect(self.setMethod)
-            ilayout.addWidget(self.userbutton)
-            ilayout.addWidget(self.systembutton)
-
-        ilayout.addWidget(QLabel("\nAfter download use the filename inserted by\nprogram or select an already downloaded\nasset pack and press extract:"))
-
-        hlayout = QHBoxLayout()
-        self.zipfilebuttton = IconButton(0, os.path.join(self.env.path_sysicon, "files.png"), "Select zip file.", self.searchzipfile, 16)
-        hlayout.addWidget(self.zipfilebuttton)
-
         self.filename = QLineEdit("")
         self.filename.editingFinished.connect(self.fnameinserted)
-        self.filename.setText(self.parent.glob.lastdownload)
-        hlayout.addWidget(self.filename)
-        ilayout.addLayout(hlayout)
+        ilayout.addWidget(self.filename)
 
         self.savebutton = QPushButton("Extract")
         self.savebutton.clicked.connect(self.extractZip)
         ilayout.addWidget(self.savebutton)
 
-        ilayout.addWidget(QLabel("\nIf the downloaded file is no longer needed,\npress cleanup to delete the temporary folder"))
         self.clbutton = QPushButton("Clean Up")
         self.clbutton.clicked.connect(self.cleanUp)
+        ilayout.addWidget(self.clbutton)
+        
+        gb_pack.setLayout(ilayout)
+        layout.addWidget(gb_pack)
+        
+        # Wrap everything up cleanly inside your scroll area canvas panel layout
+        self.addWidget(scrollArea)
+
         ilayout.addWidget(self.clbutton)
         ilayout.addStretch()
         gb.setLayout(ilayout)
@@ -263,6 +260,7 @@ class DownLoadImport(QVBoxLayout):
         self.packinserted()
         self.fnameinserted()
         self.addWidget(scrollArea)
+
     def on_backend_mode_changed(self):
         """Processes the toggle between the Baseline Cache index and Live GitHub streams."""
         self.use_github_backend = self.rad_github_mode.isChecked()
@@ -270,6 +268,11 @@ class DownLoadImport(QVBoxLayout):
             self.asdlbutton.setText("Synchronize Master Asset Lists [GitHub Live]")
         else:
             self.asdlbutton.setText("Restore Baseline Offline Cache [Local Baseline]")
+
+        self.getAssetPackList()
+        if hasattr(self, 'combo') and self.combo is not None:
+            self.combo.clear()
+            self.combo.addItems(self.packitems)
 
     def searchzipfile(self):
         freq = MHFileRequest(self.glob, "Select zipfile", "compressed file (*.zip)", "")
@@ -494,9 +497,13 @@ class DownLoadImport(QVBoxLayout):
         else:
             QMessageBox.information(self.parent, "Done!", self.bckproc.finishmsg)
         self.bckproc = None
+        
+        # Force-read the newly downloaded file off your disk partition
         self.latest = self.assets.testAssetList(self.assetlistpath)
         if hasattr(self, 'browsebutton') and self.browsebutton:
             self.browsebutton.setEnabled(self.latest is not None)
+            
+        # RE-PAINT DROPDOWN WINDOW: Pulls the new combined keys and populates the UI drop box natively
         self.getAssetPackList()
         if hasattr(self, 'combo') and self.combo is not None:
             self.combo.clear()
@@ -518,8 +525,6 @@ class DownLoadImport(QVBoxLayout):
         # PATH 1: ORIGINAL UNTOUCHED LEGACY NETWORK GATEWAY
         # ----------------------------------------------------
         if not self.use_github_backend:
-            # FORCE RE-CALCULATING THE FILENAMES DIRECTLY FROM THE CORE LIVE SERVER PROFILE
-            # This completely fixes the 404 by using the exact filenames the server expects!
             assetname = os.path.split(self.env.release_info["url_assetlist"])[1]
             assetpackname = os.path.split(self.env.release_info["url_assetpacklist"])[1]
             
@@ -527,15 +532,12 @@ class DownLoadImport(QVBoxLayout):
             dl = os.path.join(self.env.path_userdata, "downloads", self.env.basename)
             pdl = os.path.join(self.env.path_userdata, "downloads", stdmesh)
             
-            # Recalculate true local storage file paths
             dest_list = os.path.join(dl, assetname)
             dest_packs = os.path.join(pdl, assetpackname)
             
-            # Re-assign variables so the asset engine discovers them on disk
             self.assetlistpath = dest_list
             self.assetpacklistpath = dest_packs
             
-            # Run your untouched native legacy downloading loops exactly like your old script did
             local_paths = [dest_list, dest_packs]
             i = 0
             for fname in self.env.release_info["url_assetlist"], self.env.release_info["url_assetpacklist"]:
@@ -549,11 +551,28 @@ class DownLoadImport(QVBoxLayout):
             return
 
         # ----------------------------------------------------
-        # PATH 2: ISOLATED LIVE GITHUB REPOSITORY PASS
+        # PATH 2: DYNAMICALLY CHOSEN GITHUB REPOSITORY SWITCH
         # ----------------------------------------------------
-        # Force the destination file variables to follow your clean GitHub names matrix
-        self.assetlistpath = os.path.join(os.path.join(self.env.path_userdata, "downloads", self.env.basename), "community_index.json")
-        self.assetpacklistpath = os.path.join(os.path.join(self.env.path_userdata, "downloads", self.env.release_info["standardmesh"]), "community_packs.json")
+        target_repository = "Makehuman-2/MH2_Asset_Repository_CC-By"
+        sub_folder_token = "cc_by"
+
+        # THE DIRECT REPOSITORY LINK SWITCHER: Intercepts your choice natively 
+        if hasattr(self, 'license_dropdown') and self.license_dropdown:
+            current_index = self.license_dropdown.currentIndex()
+            if current_index == 1:
+                target_repository = "Makehuman-2/MH2_Asset_Repository_CCO"
+                sub_folder_token = "cc_0"
+            elif current_index == 2:
+                target_repository = "Makehuman-2/MH2_Asset_repository_AGPL"
+                sub_folder_token = "agpl"
+
+        # Separate directory storage partitions so repositories never overwrite each other
+        stdmesh = self.env.release_info["standardmesh"]
+        dl_root = os.path.join(self.env.path_userdata, "downloads", self.env.basename, sub_folder_token)
+        pdl_root = os.path.join(self.env.path_userdata, "downloads", stdmesh, sub_folder_token)
+        
+        self.assetlistpath = os.path.join(dl_root, "community_index.json")
+        self.assetpacklistpath = os.path.join(pdl_root, "community_packs.json")
         
         destination = self.assetlistpath
         destination2 = self.assetpacklistpath
@@ -562,8 +581,6 @@ class DownLoadImport(QVBoxLayout):
         domain_part2 = "githubuser"
         domain_part3 = "content.com"
         raw_server_gateway = f"{domain_part1}{domain_part2}{domain_part3}"
-        
-        target_repository = "Makehuman-2/MH2_Asset_Repository_CC-By"
         target_branch = "main"
         
         list_url = f"{raw_server_gateway}/{target_repository}/{target_branch}/community_index.json"
@@ -580,10 +597,10 @@ class DownLoadImport(QVBoxLayout):
                     with open(destination2, "wb") as f_out_packs:
                         f_out_packs.write(packs_bytes)
                 else:
-                    self.error = "Sync failed: Remote 'community_packs.json' catalog is blank."
+                    self.error = f"Sync failed: '{target_repository}' catalog is empty."
                     return
         except Exception as e:
-            self.error = f"Failed to download asset packs directory list: {str(e)}"
+            self.error = f"Failed to download asset pack list from {target_repository}: {str(e)}"
             return
 
         try:
@@ -600,6 +617,8 @@ class DownLoadImport(QVBoxLayout):
             os.makedirs(os.path.dirname(destination), exist_ok=True)
             with open(destination, "w", encoding="utf-8") as f_blank:
                 json.dump([], f_blank)
+
+
 
     def listDownLoad(self):
         if self.bckproc == None:
